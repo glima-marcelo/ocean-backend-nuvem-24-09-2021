@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 
 (async () => {
-    const url = "mongodb://localhost:27017";
+    const url = "mongodb+srv://admin:QP6CfQKQlwF3yFsv@mongodbcluster0.wobiq.mongodb.net/";
     const dbName = "ocean_bancodados_22_09_2021";
 
     const client = await MongoClient.connect(url);
@@ -136,12 +136,10 @@ const app = express();
             return;
         }
 
-        const index = lista.indexOf(itemEncontrado);
-
-        lista.splice(index, 1);
+        await collection.deleteOne({ _id: new ObjectId(id) });
 
         res.send("Personagem removida com sucesso!");
     });
 
-    app.listen(3000);
+    app.listen(process.env.PORT || 3000);
 })();
