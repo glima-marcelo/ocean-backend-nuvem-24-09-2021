@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 
 (async () => {
-    const url = "mongodb+srv://admin:hd2rV5duoPrrIi3t@cluster0.jup2c.mongodb.net/";
+    const url = "mongodb+srv://admin:QP6CfQKQlwF3yFsv@mongodbcluster0.wobiq.mongodb.net/";
     const dbName = "ocean_bancodados_22_09_2021";
 
     const client = await MongoClient.connect(url);
@@ -65,11 +65,11 @@ const app = express();
 
     // [POST] /personagens
     // Create
-    app.post("/personagens", function (req, res) {
+    app.post("/personagens", async function (req, res) {
         // Obtém o corpo da requisição e coloca na variável item
         const item = req.body;
 
-        if (!item) {
+        if (!item || !item.nome) {
             res.status(400).send(
                 "Chave 'nome' não foi encontrada no corpo da requisição."
             );
@@ -77,26 +77,26 @@ const app = express();
             return;
         }
 
-        item.id = lista.push(item);
+        await collection.insertOne(item);
 
         res.status(201).send(item);
     });
 
     // [PUT] /personagens/:id
     // Update
-    app.put("/personagens/:id", function (req, res) {
+    app.put("/personagens/:id", async function (req, res) {
         /*
-    Objetivo: Atualizar uma personagem
-    Passos:
-    - Pegar o ID dessa personagem
-    - Pegar a nova informação que eu quero atualizar
-    - Atualizar essa nova informação na lista de personagens
-    - Exibir que deu certo
-    */
+        Objetivo: Atualizar uma personagem
+        Passos:
+        - Pegar o ID dessa personagem
+        - Pegar a nova informação que eu quero atualizar
+        - Atualizar essa nova informação na lista de personagens
+        - Exibir que deu certo
+        */
 
-        const id = +req.params.id;
+        const id = req.params.id;
 
-        const itemEncontrado = findById(id);
+        const itemEncontrado = await findById(id);
 
         if (!itemEncontrado) {
             res.status(404).send("Personagem não encontrado.");
@@ -114,21 +114,20 @@ const app = express();
             return;
         }
 
-        const index = lista.indexOf(itemEncontrado);
+        await collection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: novoItem }
+        );
 
-        novoItem.id = id;
-
-        lista[index] = novoItem;
-
-        res.send("Personagem atualizada com sucesso!");
+        res.send(novoItem);
     });
 
     // [DELETE] /personagens/:id
     // Delete
-    app.delete("/personagens/:id", function (req, res) {
-        const id = +req.params.id;
+    app.delete("/personagens/:id", async function (req, res) {
+        const id = req.params.id;
 
-        const itemEncontrado = findById(id);
+        const itemEncontrado = await findById(id);
 
         if (!itemEncontrado) {
             res.status(404).send("Personagem não encontrado.");
